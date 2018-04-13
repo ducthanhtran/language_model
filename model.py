@@ -15,15 +15,29 @@ def create_argparser() -> argparse.ArgumentParser:
 class LanguageModelLSTM:
     """A simple (stacked) LSTM language model"""
 
-    def __init__(self, num_layers: int, num_hidden_lstm: int) -> None:
+    def __init__(self, num_layers: int, num_hidden_lstm: int, vocab_size: int, embedding_dim: int) -> None:
+        """
+        Read in required parameters regarding LSTM network structure as well as vocabulary and embedding
+        dimensionality.
+
+        :param num_layers: number of stacked RNN layers (with LSTM cells)
+        :param num_hidden_lstm: number of hidden units within each LSTM cell
+        :param vocab_size: vocabulary size
+        :param embedding_dim: vector dimensionality of word embeddings
+        """
         self.num_layers = num_layers
         self.num_hidden_lstm = num_hidden_lstm
+        self.vocab_size = vocab_size
+        self.embedding_dim = embedding_dim
 
         # Stacked RNN with LSTM cells
         rnn = mx.rnn.SequentialRNNCell()
         for i in range(self.num_layers):
             rnn.add(mx.rnn.LSTMCell(num_hidden=self.num_hidden_lstm, prefix='lstm_layer_%d'.format(i)))
         self.rnn = rnn
+
+        # weight parameters for neural network
+        self.weight_embed = mx.sym.Variable('weight_embed')
 
     def sym_gen(self, seq_length: int) -> :
         """
@@ -34,7 +48,10 @@ class LanguageModelLSTM:
         :param seq_length: length of sequence; states how many steps in time we unroll our stacked RNN for
         """
         data = mx.sym.Variable('data')
-        label = mx.sym.Variable('label_softmax')
+        label = mx.sym.Variable('label')
+        embedding = mx.sym.Embedding(data=data, weight=self.weight_embed
+                                     input_dim=self.vocab_size, output_dim=self.embedding_dim)
+
 
         self.rnn.reset() # NOTE: mx.rnn.SequentialRNNCell.unroll() does a reset as well - our reset might not be needed
         self.rnn.unroll
