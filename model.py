@@ -47,21 +47,17 @@ class LanguageModelLSTM:
 
         :param seq_length: length of sequence; states how many steps in time we unroll our stacked RNN for
         """
+        # shape: (batch_size, 1)
+        label = mx.sym.Variable('label')
         # shape: (batch_size, seq_length)
         data = mx.sym.Variable('data')
         # shape: (batch_size, seq_length, self.embedding_dim)
         embedding = mx.sym.Embedding(data=data, weight=self.weight_embed
                                      input_dim=self.vocab_size, output_dim=self.embedding_dim)
 
-        # shape: (batch_size, 1)
-        label = mx.sym.Variable('label')
-
-        
-
-
         # NOTE: mx.rnn.SequentialRNNCell.unroll() does a reset as well - our reset command might not be needed
         self.rnn_stack.reset()
-        self.rnn_stack.unroll(length=seq_length, inputs=embedding, merge_outputs=True)
+        outputs = self.rnn_stack.unroll(length=seq_length, inputs=embedding, merge_outputs=True)[0]
 
 
 
