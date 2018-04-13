@@ -26,8 +26,18 @@ class LanguageModelLSTM:
         self.rnn = rnn
 
     def sym_gen(self, seq_length: int) -> :
+        """
+        Creates a new computation graph by unrolling the stacked RNN with LSTM cells
+        according to a parameter 'seq_length'. Therefore, different unrolling lengths can be acquired
+        and training can be done more efficiently by using bucketing strategies.
+
+        :param seq_length: length of sequence; states how many steps in time we unroll our stacked RNN for
+        """
         data = mx.sym.Variable('data')
         label = mx.sym.Variable('label_softmax')
+
+        self.rnn.reset() # NOTE: mx.rnn.SequentialRNNCell.unroll() does a reset as well - our reset might not be needed
+        self.rnn.unroll
 
 
 
