@@ -58,10 +58,3 @@ class LanguageModelLSTM:
         # NOTE: mx.rnn.SequentialRNNCell.unroll() does a reset as well - our reset command might not be needed
         self.rnn_stack.reset()
         outputs = self.rnn_stack.unroll(length=seq_length, inputs=embedding, merge_outputs=True)[0]
-
-
-
-
-
-if __name__ == '__main__':
-    args = create_argparser().parse_args()
