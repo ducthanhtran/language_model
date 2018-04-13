@@ -31,10 +31,10 @@ class LanguageModelLSTM:
         self.embedding_dim = embedding_dim
 
         # Stacked RNN with LSTM cells
-        rnn = mx.rnn.SequentialRNNCell()
+        rnn_stack = mx.rnn.SequentialRNNCell()
         for i in range(self.num_layers):
-            rnn.add(mx.rnn.LSTMCell(num_hidden=self.num_hidden_lstm, prefix='lstm_layer_%d'.format(i)))
-        self.rnn = rnn
+            rnn_stack.add(mx.rnn.LSTMCell(num_hidden=self.num_hidden_lstm, prefix='lstm_layer_%d'.format(i)))
+        self.rnn_stack = rnn_stack
 
         # weight parameters for neural network
         self.weight_embed = mx.sym.Variable('weight_embed')
@@ -47,14 +47,21 @@ class LanguageModelLSTM:
 
         :param seq_length: length of sequence; states how many steps in time we unroll our stacked RNN for
         """
+        # shape: (batch_size, seq_length)
         data = mx.sym.Variable('data')
-        label = mx.sym.Variable('label')
+        # shape: (batch_size, seq_length, self.embedding_dim)
         embedding = mx.sym.Embedding(data=data, weight=self.weight_embed
                                      input_dim=self.vocab_size, output_dim=self.embedding_dim)
 
+        # shape: (batch_size, 1)
+        label = mx.sym.Variable('label')
 
-        self.rnn.reset() # NOTE: mx.rnn.SequentialRNNCell.unroll() does a reset as well - our reset might not be needed
-        self.rnn.unroll
+        
+
+
+        # NOTE: mx.rnn.SequentialRNNCell.unroll() does a reset as well - our reset command might not be needed
+        self.rnn_stack.reset()
+        self.rnn_stack.unroll(length=seq_length, inputs=embedding, merge_outputs=True)
 
 
 
