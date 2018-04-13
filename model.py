@@ -27,7 +27,7 @@ class LanguageModelLSTM:
         # weight parameters for neural network
         self.weight_embed = mx.sym.Variable('weight_embed')
 
-    def sym_gen(self, seq_length: int) -> :
+    def sym_gen(self, seq_length: int):
         """
         Creates a new computation graph by unrolling the stacked RNN with LSTM cells
         according to a parameter 'seq_length'. Therefore, different unrolling lengths can be acquired
@@ -46,3 +46,11 @@ class LanguageModelLSTM:
         # NOTE: mx.rnn.SequentialRNNCell.unroll() does a reset as well - our reset command might not be needed
         self.rnn_stack.reset()
         outputs = self.rnn_stack.unroll(length=seq_length, inputs=embedding, merge_outputs=True)[0]
+
+        # softmax output layer
+        pred = mx.sym.reshape(data=outputs, shape=(-1, self.num_hidden_lstm))
+
+        pred = mx.sym.FullyConnected(data=pred, num_hidden=self.vocab_size, name='softmax_pred')
+        sm = mx.sym.SoftmaxOutput(data=pred, label=label, name='softmax')
+
+        return (sm, ['data'], ['label'])
